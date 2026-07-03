@@ -1,0 +1,16 @@
+{
+  "id": "otto.api.extension",
+  "name": "Otto API Extension",
+  "version": "0.1.0",
+  "schemaVersion": "1.0.0",
+  "description": "Generates and routes Otto API endpoints from the command service layer.",
+  "author": "Otto Systems",
+  "entrypoints": {
+    "generator": "src/api-generator.ts",
+    "router": "src/api-router.ts",
+    "rescan": "src/api-rescan.ts"
+  },
+  "capabilities": [
+    "api"
+  ]
+}
