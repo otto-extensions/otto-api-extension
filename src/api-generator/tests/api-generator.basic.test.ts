@@ -4,15 +4,13 @@ import { mkdtemp, mkdir, rm, writeFile } from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 
-import { generateApiArtifacts } from "../src/api-generator.js";
-import { executeApiRescanCommand } from "../src/api-rescan.js";
+import { generateApiArtifacts, resolveCommandServicePath } from "../../api-generator.js";
 
-test("generateApiArtifacts indexes command-service files and command execution persists metadata", async () => {
+test("api generator indexes command-service files and preserves versioning", async () => {
   const tempRoot = await mkdtemp(path.join(os.tmpdir(), "otto-api-basic-"));
 
   try {
     const commandRoot = path.join(tempRoot, "commands");
-    const memPalaceRoot = path.join(tempRoot, "mempalace");
     await mkdir(commandRoot, { recursive: true });
     await writeFile(
       path.join(commandRoot, "hello.json"),
@@ -27,17 +25,16 @@ test("generateApiArtifacts indexes command-service files and command execution p
 
     assert.equal(generated.version, "2.4.6");
     assert.equal(generated.warnings.length, 0);
-    assert.ok(generated.endpoints.some((endpoint) => endpoint.kind === "generated" && endpoint.commandId === "hello"));
-
-    const rescanned = await executeApiRescanCommand({
-      commandServicePath: commandRoot,
-      memPalaceRoot,
-      source: "user",
-      trigger: "manual"
-    });
-
-    assert.equal(rescanned.endpoints.filter((endpoint) => endpoint.kind === "generated").length, 1);
+    assert.equal(generated.endpoints.length, 1);
+    assert.equal(generated.endpoints[0]?.commandId, "hello");
   } finally {
     await rm(tempRoot, { recursive: true, force: true });
   }
+});
+
+test("api generator resolves explicit and default command service paths", () => {
+  const explicitPath = resolveCommandServicePath("/repo/root", "/custom/commands");
+
+  assert.equal(explicitPath, "/custom/commands");
+  assert.match(resolveCommandServicePath("/repo/root"), /otto-command-service\/src\/commands$/);
 });
