@@ -6,6 +6,7 @@ import {
   generateApiArtifacts,
   persistApiMetadata
 } from "./api-generator.js";
+import { commandService } from "./command-service.js";
 
 export interface ApiRescanOptions extends ApiGenerationOptions {
   memPalaceRoot?: string;
@@ -35,6 +36,8 @@ export interface ExtensionCommandDefinition<TInput, TOutput> {
   execute(input: TInput): Promise<TOutput>;
 }
 
+const API_RESCAN_COMMAND_ID = "otto.api.rescan";
+
 export async function rescanApi(options: ApiRescanOptions): Promise<ApiGenerationResult> {
   const result = await generateApiArtifacts(options);
   await persistApiMetadata(result, {
@@ -45,16 +48,20 @@ export async function rescanApi(options: ApiRescanOptions): Promise<ApiGeneratio
   return result;
 }
 
-export async function executeApiRescanCommand(input: ApiRescanCommandInput): Promise<ApiGenerationResult> {
-  return rescanApi({
+commandService.register<ApiRescanCommandInput, ApiGenerationResult>(API_RESCAN_COMMAND_ID, async (input) =>
+  rescanApi({
     ...input,
     trigger: input.trigger ?? "manual",
     source: input.source ?? "user"
-  });
+  })
+);
+
+export async function executeApiRescanCommand(input: ApiRescanCommandInput): Promise<ApiGenerationResult> {
+  return commandService.run<ApiRescanCommandInput, ApiGenerationResult>(API_RESCAN_COMMAND_ID, input);
 }
 
 export const apiRescanCommandDefinition: ExtensionCommandDefinition<ApiRescanCommandInput, ApiGenerationResult> = {
-  id: "otto.api.rescan",
+  id: API_RESCAN_COMMAND_ID,
   version: "1.0.0",
   description: "Rescan command registry and regenerate OpenAPI metadata.",
   metadata: {
