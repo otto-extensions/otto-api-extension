@@ -4,8 +4,7 @@ import { mkdtemp, mkdir, readFile, rm, writeFile } from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 
-import { routeApiRequest } from "../src/api-router.js";
-import { rescanApi, runApiRescanCommand } from "../src/api-rescan.js";
+import { executeApiRescanCommand, rescanApi } from "../src/api-rescan.js";
 
 test("manual and automatic API rescans write MemPalace metadata", async () => {
   const tempRoot = await mkdtemp(path.join(os.tmpdir(), "otto-api-rescan-"));
@@ -20,22 +19,11 @@ test("manual and automatic API rescans write MemPalace metadata", async () => {
       "utf8"
     );
 
-    const routed = await routeApiRequest(
-      {
-        method: "POST",
-        path: "/api/v1/system/rescan"
-      },
-      {
-        commandServicePath: commandRoot,
-        memPalaceRoot
-      }
-    );
-
-    assert.equal(routed.mode, "rescan");
-
-    const viaCommand = await runApiRescanCommand(["otto", "api", "rescan"], {
+    const viaCommand = await executeApiRescanCommand({
       commandServicePath: commandRoot,
-      memPalaceRoot
+      memPalaceRoot,
+      trigger: "manual",
+      source: "user"
     });
     assert.equal(viaCommand.endpoints.filter((endpoint) => endpoint.kind === "generated").length, 1);
 

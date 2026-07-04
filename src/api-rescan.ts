@@ -13,6 +13,28 @@ export interface ApiRescanOptions extends ApiGenerationOptions {
   source: RescanSource;
 }
 
+export interface ApiRescanCommandInput extends Omit<ApiRescanOptions, "trigger" | "source"> {
+  trigger?: RescanTrigger;
+  source?: RescanSource;
+}
+
+export interface ExtensionCommandDefinition<TInput, TOutput> {
+  id: string;
+  version: string;
+  description: string;
+  metadata: {
+    owner: string;
+    tags: string[];
+  };
+  safety: {
+    idempotent: boolean;
+    sideEffects: Array<"mempalace-write">;
+  };
+  inputSchema: Record<string, unknown>;
+  outputSchema: Record<string, unknown>;
+  execute(input: TInput): Promise<TOutput>;
+}
+
 export async function rescanApi(options: ApiRescanOptions): Promise<ApiGenerationResult> {
   const result = await generateApiArtifacts(options);
   await persistApiMetadata(result, {
@@ -23,15 +45,48 @@ export async function rescanApi(options: ApiRescanOptions): Promise<ApiGeneratio
   return result;
 }
 
-export async function runApiRescanCommand(argv: string[], options: Omit<ApiRescanOptions, "trigger" | "source">) {
-  const normalized = argv[0] === "otto" ? argv.slice(1) : argv;
-  if (normalized[0] !== "api" || normalized[1] !== "rescan") {
-    throw new Error("Expected the manual command 'otto api rescan'.");
-  }
-
+export async function executeApiRescanCommand(input: ApiRescanCommandInput): Promise<ApiGenerationResult> {
   return rescanApi({
-    ...options,
-    trigger: "manual",
-    source: "user"
+    ...input,
+    trigger: input.trigger ?? "manual",
+    source: input.source ?? "user"
   });
 }
+
+export const apiRescanCommandDefinition: ExtensionCommandDefinition<ApiRescanCommandInput, ApiGenerationResult> = {
+  id: "otto.api.rescan",
+  version: "1.0.0",
+  description: "Rescan command registry and regenerate OpenAPI metadata.",
+  metadata: {
+    owner: "otto-api-extension",
+    tags: ["api", "rescan", "command-service"]
+  },
+  safety: {
+    idempotent: true,
+    sideEffects: ["mempalace-write"]
+  },
+  inputSchema: {
+    type: "object",
+    additionalProperties: false,
+    properties: {
+      repoRoot: { type: "string" },
+      commandServicePath: { type: "string" },
+      memPalaceRoot: { type: "string" },
+      version: { type: "string" },
+      trigger: { type: "string", enum: ["manual", "automatic"] },
+      source: { type: "string", enum: ["user", "OttoUpdateAgent"] }
+    }
+  },
+  outputSchema: {
+    type: "object",
+    required: ["version", "generatedAt", "scannedPath", "warnings", "endpoints"],
+    properties: {
+      version: { type: "string" },
+      generatedAt: { type: "string" },
+      scannedPath: { type: "string" },
+      warnings: { type: "array" },
+      endpoints: { type: "array" }
+    }
+  },
+  execute: executeApiRescanCommand
+};

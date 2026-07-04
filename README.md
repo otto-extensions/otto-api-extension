@@ -1,11 +1,11 @@
 # Otto API Extension
 
-This repository provides a tracer-bullet Otto API extension that scans the command service layer, builds versioned endpoint metadata, validates request shapes, and forwards matched command requests without reimplementing command business logic.
+This repository provides a tracer-bullet Otto API extension that scans the command service layer and builds versioned OpenAPI endpoint metadata from the command registry without reimplementing command business logic.
 
 ## Responsibilities
 - Scan `otto-command-service/src/commands/` for command definitions.
-- Generate versioned REST endpoints and JSON schemas.
-- Support manual rescans through `otto api rescan`.
+- Generate versioned REST endpoint metadata from registered commands.
+- Support manual rescans through command-service execution of `otto.api.rescan`.
 - Support automatic rescans triggered by `OttoUpdateAgent`.
 - Persist generation metadata to MemPalace.
 

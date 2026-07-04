@@ -163,33 +163,6 @@ export async function generateApiArtifacts(options: ApiGenerationOptions = {}): 
   const { scannedPath, commands, warnings } = await scanCommandDefinitions(options);
   const version = normalizeVersion(options.version);
 
-  const builtins: ApiEndpointDefinition[] = [
-    {
-      kind: "builtin",
-      method: "GET",
-      route: "/api/v1/system/version",
-      description: "Report the Otto API extension version."
-    },
-    {
-      kind: "builtin",
-      method: "POST",
-      route: "/api/v1/system/update",
-      description: "Expose the API update hook without embedding update engine logic."
-    },
-    {
-      kind: "builtin",
-      method: "GET",
-      route: "/api/v1/system/lifecycle",
-      description: "Report API module lifecycle state."
-    },
-    {
-      kind: "builtin",
-      method: "POST",
-      route: "/api/v1/system/rescan",
-      description: "Rescan the command service layer and regenerate API metadata."
-    }
-  ];
-
   const generated = commands.map<ApiEndpointDefinition>((command) => ({
     kind: "generated",
     method: "POST",
@@ -204,7 +177,7 @@ export async function generateApiArtifacts(options: ApiGenerationOptions = {}): 
     generatedAt: new Date().toISOString(),
     scannedPath,
     warnings,
-    endpoints: [...builtins, ...generated]
+    endpoints: generated
   };
 }
 

@@ -5,13 +5,14 @@ import os from "node:os";
 import path from "node:path";
 
 import { generateApiArtifacts } from "../src/api-generator.js";
-import { routeApiRequest } from "../src/api-router.js";
+import { executeApiRescanCommand } from "../src/api-rescan.js";
 
-test("generateApiArtifacts indexes command-service files and routeApiRequest forwards them", async () => {
+test("generateApiArtifacts indexes command-service files and command execution persists metadata", async () => {
   const tempRoot = await mkdtemp(path.join(os.tmpdir(), "otto-api-basic-"));
 
   try {
     const commandRoot = path.join(tempRoot, "commands");
+    const memPalaceRoot = path.join(tempRoot, "mempalace");
     await mkdir(commandRoot, { recursive: true });
     await writeFile(
       path.join(commandRoot, "hello.json"),
@@ -28,26 +29,14 @@ test("generateApiArtifacts indexes command-service files and routeApiRequest for
     assert.equal(generated.warnings.length, 0);
     assert.ok(generated.endpoints.some((endpoint) => endpoint.kind === "generated" && endpoint.commandId === "hello"));
 
-    const routed = await routeApiRequest(
-      {
-        method: "POST",
-        path: "/api/v1/commands/hello",
-        body: {
-          commandId: "hello",
-          args: ["--name", "World"]
-        }
-      },
-      {
-        commandServicePath: commandRoot
-      }
-    );
+    const rescanned = await executeApiRescanCommand({
+      commandServicePath: commandRoot,
+      memPalaceRoot,
+      source: "user",
+      trigger: "manual"
+    });
 
-    assert.equal(routed.mode, "forward");
-    assert.equal(routed.statusCode, 200);
-    if (routed.mode === "forward") {
-      assert.equal(routed.target.commandId, "hello");
-      assert.equal(routed.body.forwardedTo, "hello");
-    }
+    assert.equal(rescanned.endpoints.filter((endpoint) => endpoint.kind === "generated").length, 1);
   } finally {
     await rm(tempRoot, { recursive: true, force: true });
   }
