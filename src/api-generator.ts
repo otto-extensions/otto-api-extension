@@ -64,6 +64,20 @@ const DISPLAY_BUILTIN_ENDPOINTS: ApiEndpointDefinition[] = [
   {
     kind: "builtin",
     method: "GET",
+    route: "/eds/registry",
+    description: "Get local extension discovery registry from EDS.",
+    commandId: "eds.get.registry"
+  },
+  {
+    kind: "builtin",
+    method: "GET",
+    route: "/eds/extension/:name",
+    description: "Get one local extension definition from EDS by name.",
+    commandId: "eds.get.extension"
+  },
+  {
+    kind: "builtin",
+    method: "GET",
     route: "/debug/last",
     description: "Get the last command-service-routed debug summary.",
     commandId: "debug.report.last-run"

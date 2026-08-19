@@ -7,6 +7,8 @@
     { "method": "GET", "route": "/debug/last", "command": "debug.report.last-run" },
     { "method": "POST", "route": "/debug/trace", "command": "debug.trace.command" },
     { "method": "POST", "route": "/debug/trace-api", "command": "debug.trace.api" },
-    { "method": "POST", "route": "/debug/snapshot", "command": "debug.snapshot.system" }
+    { "method": "POST", "route": "/debug/snapshot", "command": "debug.snapshot.system" },
+    { "method": "GET", "route": "/eds/registry", "command": "eds.get.registry" },
+    { "method": "GET", "route": "/eds/extension/:name", "command": "eds.get.extension" }
   ]
 }
