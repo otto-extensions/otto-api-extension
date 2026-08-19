@@ -19,8 +19,9 @@ test("api rescan command writes MemPalace metadata with manual defaults", async 
       commandServicePath: commandRoot,
       memPalaceRoot
     });
+    const generatedEndpoints = rescanned.endpoints.filter((endpoint) => endpoint.kind === "generated");
 
-    assert.equal(rescanned.endpoints.length, 1);
+    assert.equal(generatedEndpoints.length, 1);
     const index = JSON.parse(await readFile(path.join(memPalaceRoot, "api-endpoint-index.json"), "utf8")) as {
       endpoints: Array<{ commandId?: string }>;
     };

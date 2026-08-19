@@ -39,6 +39,58 @@ export interface ApiMetadataWriteOptions {
   source: RescanSource;
 }
 
+const DISPLAY_BUILTIN_ENDPOINTS: ApiEndpointDefinition[] = [
+  {
+    kind: "builtin",
+    method: "GET",
+    route: "/display/:role/current",
+    description: "Get current role-aware display payload from the display orchestrator.",
+    commandId: "display.current"
+  },
+  {
+    kind: "builtin",
+    method: "GET",
+    route: "/content/calendar.json",
+    description: "Get normalized calendar content for display surfaces.",
+    commandId: "calendar.refresh"
+  },
+  {
+    kind: "builtin",
+    method: "GET",
+    route: "/content/assignments.json",
+    description: "Get normalized assignments content for display surfaces.",
+    commandId: "assignments.import"
+  },
+  {
+    kind: "builtin",
+    method: "GET",
+    route: "/debug/last",
+    description: "Get the last command-service-routed debug summary.",
+    commandId: "debug.report.last-run"
+  },
+  {
+    kind: "builtin",
+    method: "POST",
+    route: "/debug/trace",
+    description: "Write command trace events through the command service layer.",
+    commandId: "debug.trace.command"
+  },
+  {
+    kind: "builtin",
+    method: "POST",
+    route: "/debug/trace-api",
+    description: "Write external API trace events through the command service layer.",
+    commandId: "debug.trace.api"
+  },
+  {
+    kind: "builtin",
+    method: "POST",
+    route: "/debug/snapshot",
+    description: "Capture and return runtime snapshot metadata.",
+    commandId: "debug.snapshot.system"
+  }
+];
+
 const SUPPORTED_EXTENSIONS = new Set([".json", ".ts", ".js", ".mjs", ".cjs", ".rs"]);
 
 function normalizeVersion(version?: string): string {
@@ -177,7 +229,7 @@ export async function generateApiArtifacts(options: ApiGenerationOptions = {}): 
     generatedAt: new Date().toISOString(),
     scannedPath,
     warnings,
-    endpoints: generated
+    endpoints: [...DISPLAY_BUILTIN_ENDPOINTS, ...generated]
   };
 }
 

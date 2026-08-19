@@ -30,8 +30,9 @@ test("api generator warns when no supported command definitions are discovered",
     await mkdir(commandRoot, { recursive: true });
 
     const generated = await generateApiArtifacts({ commandServicePath: commandRoot });
+    const generatedEndpoints = generated.endpoints.filter((endpoint) => endpoint.kind === "generated");
 
-    assert.equal(generated.endpoints.length, 0);
+    assert.equal(generatedEndpoints.length, 0);
     assert.match(generated.warnings[0] ?? "", /no command definitions/i);
   } finally {
     await rm(tempRoot, { recursive: true, force: true });

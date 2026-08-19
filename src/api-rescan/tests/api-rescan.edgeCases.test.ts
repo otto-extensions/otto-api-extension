@@ -37,8 +37,9 @@ test("api rescan command defaults trigger and source when omitted", async () => 
     await writeFile(path.join(commandRoot, "status.json"), JSON.stringify({ id: "status" }, null, 2), "utf8");
 
     const result = await executeApiRescanCommand({ commandServicePath: commandRoot, memPalaceRoot });
+    const generatedEndpoints = result.endpoints.filter((endpoint) => endpoint.kind === "generated");
 
-    assert.equal(result.endpoints.length, 1);
+    assert.equal(generatedEndpoints.length, 1);
   } finally {
     await rm(tempRoot, { recursive: true, force: true });
   }

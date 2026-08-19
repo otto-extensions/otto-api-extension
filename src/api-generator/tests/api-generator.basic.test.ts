@@ -22,11 +22,12 @@ test("api generator indexes command-service files and preserves versioning", asy
       commandServicePath: commandRoot,
       version: "2.4.6"
     });
+    const generatedEndpoints = generated.endpoints.filter((endpoint) => endpoint.kind === "generated");
 
     assert.equal(generated.version, "2.4.6");
     assert.equal(generated.warnings.length, 0);
-    assert.equal(generated.endpoints.length, 1);
-    assert.equal(generated.endpoints[0]?.commandId, "hello");
+    assert.equal(generatedEndpoints.length, 1);
+    assert.equal(generatedEndpoints[0]?.commandId, "hello");
   } finally {
     await rm(tempRoot, { recursive: true, force: true });
   }
@@ -35,6 +36,6 @@ test("api generator indexes command-service files and preserves versioning", asy
 test("api generator resolves explicit and default command service paths", () => {
   const explicitPath = resolveCommandServicePath("/repo/root", "/custom/commands");
 
-  assert.equal(explicitPath, "/custom/commands");
-  assert.match(resolveCommandServicePath("/repo/root"), /otto-command-service\/src\/commands$/);
+  assert.equal(explicitPath, path.resolve("/custom/commands"));
+  assert.match(resolveCommandServicePath("/repo/root"), /otto-command-service[\\/]src[\\/]commands$/);
 });
